@@ -1,7 +1,7 @@
 // lib/prisma.ts
 // Prisma Client singleton to prevent multiple instances in development
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
