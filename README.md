@@ -71,7 +71,10 @@ Este comando creará las tablas necesarias en tu base de datos:
 pnpm dev
 ```
 
-La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
+La aplicación estará disponible en:
+
+- **Aplicación principal:** [http://localhost:3000](http://localhost:3000)
+- **Documentación API (Swagger UI):** [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
 ### Modo Producción
 
@@ -119,7 +122,31 @@ sii-add-card/
 
 ## 🔌 API REST
 
-La aplicación incluye una API REST completa. Consulta la [documentación de la API](./API_DOCUMENTATION.md) para más detalles sobre los endpoints disponibles.
+La aplicación incluye una API REST completa con documentación interactiva Swagger UI.
+
+### 📖 Cómo Acceder a la Documentación de la API
+
+#### Opción 1: Swagger UI (Recomendado)
+
+1. Inicia el servidor de desarrollo:
+
+   ```bash
+   pnpm dev
+   ```
+
+2. Abre tu navegador y visita:
+   **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)**
+
+3. Desde Swagger UI podrás:
+   - 📋 Ver todos los endpoints disponibles
+   - 🧪 Probar las peticiones directamente desde el navegador
+   - 📝 Ver ejemplos de request/response
+   - 🔍 Explorar los esquemas de datos
+   - 📥 Descargar la especificación OpenAPI
+
+#### Opción 2: Documentación Estática
+
+Consulta el archivo [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) para ver la documentación completa en formato Markdown.
 
 ### Endpoints principales
 
@@ -144,6 +171,7 @@ La aplicación incluye una API REST completa. Consulta la [documentación de la 
 - **Base de datos:** PostgreSQL
 - **ORM:** Prisma
 - **Lenguaje:** TypeScript
+- **Documentación API:** Swagger UI (OpenAPI 3.0)
 - **Iconos:** React Icons
 - **Alertas:** SweetAlert2
 

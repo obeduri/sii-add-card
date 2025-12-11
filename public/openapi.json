@@ -1,0 +1,723 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Sistema de Gestión de Tarjetas de Crédito API",
+    "description": "API REST para gestionar usuarios y tarjetas de crédito utilizando Prisma ORM con PostgreSQL",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Servidor de desarrollo"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Usuarios",
+      "description": "Operaciones relacionadas con usuarios"
+    },
+    {
+      "name": "Tarjetas",
+      "description": "Operaciones relacionadas con tarjetas de crédito"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": ["Usuarios"],
+        "summary": "Obtener todos los usuarios",
+        "description": "Retorna una lista de todos los usuarios registrados",
+        "parameters": [
+          {
+            "name": "include",
+            "in": "query",
+            "description": "Incluir tarjetas de crédito del usuario",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["cards", "true"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuarios obtenida exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Usuarios"],
+        "summary": "Crear un nuevo usuario",
+        "description": "Crea un nuevo usuario en el sistema",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario creado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Usuarios"],
+        "summary": "Obtener usuario por ID",
+        "description": "Retorna un usuario específico por su ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID del usuario",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "description": "Incluir tarjetas de crédito del usuario",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["cards", "true"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Usuarios"],
+        "summary": "Actualizar usuario",
+        "description": "Actualiza la información de un usuario existente",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID del usuario",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuario actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Usuarios"],
+        "summary": "Eliminar usuario",
+        "description": "Elimina un usuario del sistema (eliminación en cascada de tarjetas asociadas)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID del usuario",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario eliminado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Usuario eliminado exitosamente"
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/cards": {
+      "get": {
+        "tags": ["Tarjetas"],
+        "summary": "Obtener todas las tarjetas de crédito",
+        "description": "Retorna una lista de todas las tarjetas de crédito registradas",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "description": "Filtrar tarjetas por ID de usuario",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "description": "Incluir información del usuario",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["user", "true"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de tarjetas obtenida exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CreditCard"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Tarjetas"],
+        "summary": "Crear una nueva tarjeta de crédito",
+        "description": "Registra una nueva tarjeta de crédito en el sistema",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCardRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tarjeta creada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditCard"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/cards/{id}": {
+      "get": {
+        "tags": ["Tarjetas"],
+        "summary": "Obtener tarjeta por ID",
+        "description": "Retorna una tarjeta de crédito específica por su ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID de la tarjeta",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "description": "Incluir información del usuario",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["user", "true"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tarjeta encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditCard"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Tarjetas"],
+        "summary": "Actualizar tarjeta de crédito",
+        "description": "Actualiza la información de una tarjeta de crédito existente",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID de la tarjeta",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCardRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tarjeta actualizada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditCard"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Tarjetas"],
+        "summary": "Eliminar tarjeta de crédito",
+        "description": "Elimina una tarjeta de crédito del sistema",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID de la tarjeta",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tarjeta eliminada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Tarjeta de crédito eliminada exitosamente"
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID único del usuario",
+            "example": "clxxx123456"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Correo electrónico del usuario",
+            "example": "usuario@ejemplo.com"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nombre del usuario",
+            "example": "Juan Pérez"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha de creación"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha de última actualización"
+          },
+          "creditCards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreditCard"
+            },
+            "description": "Tarjetas de crédito asociadas (si se incluye)"
+          }
+        }
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Correo electrónico del usuario",
+            "example": "usuario@ejemplo.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nombre del usuario (opcional)",
+            "example": "Juan Pérez"
+          }
+        }
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Nuevo correo electrónico",
+            "example": "nuevoemail@ejemplo.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nuevo nombre",
+            "example": "María García"
+          }
+        }
+      },
+      "CreditCard": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID único de la tarjeta",
+            "example": "clxxx789012"
+          },
+          "cardNumber": {
+            "type": "string",
+            "description": "Número de la tarjeta (⚠️ almacenado en texto plano - solo para demostración)",
+            "example": "4111111111111111"
+          },
+          "cardHolder": {
+            "type": "string",
+            "description": "Nombre del titular de la tarjeta",
+            "example": "JUAN PÉREZ"
+          },
+          "expiryDate": {
+            "type": "string",
+            "pattern": "^(0[1-9]|1[0-2])/[0-9]{2}$",
+            "description": "Fecha de expiración (formato MM/YY)",
+            "example": "12/25"
+          },
+          "cvv": {
+            "type": "string",
+            "pattern": "^[0-9]{3,4}$",
+            "description": "Código de seguridad (⚠️ almacenado en texto plano - solo para demostración)",
+            "example": "123"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha de creación"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha de última actualización"
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID del usuario propietario",
+            "example": "clxxx123456"
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ],
+            "nullable": true,
+            "description": "Información del usuario (si se incluye)"
+          }
+        }
+      },
+      "CreateCardRequest": {
+        "type": "object",
+        "required": ["cardNumber", "cardHolder", "expiryDate", "cvv"],
+        "properties": {
+          "cardNumber": {
+            "type": "string",
+            "description": "Número de la tarjeta",
+            "example": "4111111111111111"
+          },
+          "cardHolder": {
+            "type": "string",
+            "description": "Nombre del titular",
+            "example": "JUAN PÉREZ"
+          },
+          "expiryDate": {
+            "type": "string",
+            "pattern": "^(0[1-9]|1[0-2])/[0-9]{2}$",
+            "description": "Fecha de expiración (formato MM/YY)",
+            "example": "12/25"
+          },
+          "cvv": {
+            "type": "string",
+            "pattern": "^[0-9]{3,4}$",
+            "description": "Código de seguridad",
+            "example": "123"
+          },
+          "userId": {
+            "type": "string",
+            "description": "ID del usuario propietario (opcional)",
+            "example": "clxxx123456"
+          }
+        }
+      },
+      "UpdateCardRequest": {
+        "type": "object",
+        "properties": {
+          "cardNumber": {
+            "type": "string",
+            "description": "Nuevo número de tarjeta",
+            "example": "4111111111111111"
+          },
+          "cardHolder": {
+            "type": "string",
+            "description": "Nuevo nombre del titular",
+            "example": "MARÍA GARCÍA"
+          },
+          "expiryDate": {
+            "type": "string",
+            "pattern": "^(0[1-9]|1[0-2])/[0-9]{2}$",
+            "description": "Nueva fecha de expiración (formato MM/YY)",
+            "example": "12/26"
+          },
+          "cvv": {
+            "type": "string",
+            "pattern": "^[0-9]{3,4}$",
+            "description": "Nuevo código de seguridad",
+            "example": "456"
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nuevo ID de usuario (null para desasignar)",
+            "example": "clxxx123456"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Mensaje de error"
+          },
+          "message": {
+            "type": "string",
+            "description": "Detalles adicionales del error"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Solicitud incorrecta",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "El email es requerido"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Recurso no encontrado",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "Usuario no encontrado"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflicto con el estado actual del recurso",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "Ya existe un usuario con este email"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Error interno del servidor",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "Error Interno del Servidor",
+              "message": "Mensaje de error detallado"
+            }
+          }
+        }
+      }
+    }
+  }
+}
