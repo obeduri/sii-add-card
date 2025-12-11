@@ -1,6 +1,6 @@
 import 'react-credit-cards-2/dist/es/styles-compiled.css'
 
-import { Box, Button, HStack, Heading, Input, Spinner, Text, VStack } from "@chakra-ui/react"
+import { Alert, Box, Button, HStack, Heading, Input, Spinner, Text, VStack } from "@chakra-ui/react"
 import Cards, { Focused } from 'react-credit-cards-2'
 import { DrawerBackdrop, DrawerBody, DrawerCloseTrigger, DrawerContent, DrawerFooter, DrawerHeader, DrawerRoot, DrawerTitle, DrawerTrigger } from "@chakra-ui/react"
 import { FaPlus, FaRegTrashAlt } from "react-icons/fa";
@@ -319,6 +319,14 @@ const Home = () => {
     <Box p={8} maxW="1200px" mx="auto">
       <Box mb={6} textAlign={{ base: "left", md: "center", sm: "center" }}>
         <Heading>Gestor de Tarjetas de Crédito</Heading>
+      </Box>
+      <Box>
+        <Alert.Root status="warning">
+          <Alert.Indicator />
+          <Alert.Title>
+            Esta es una demostración, con una base de datos real y compartida de manera pública por favor no utilices datos reales
+          </Alert.Title>
+        </Alert.Root>
       </Box>
       <HStack justify="space-between" mb={6}>
         <DrawerRoot open={isModalOpen} onOpenChange={(e) => setIsModalOpen(e.open)} placement="bottom">

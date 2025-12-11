@@ -1,30 +1,30 @@
-# API Documentation
+# Documentación de la API
 
-## Overview
-This API provides CRUD operations for Users and Credit Cards using Prisma ORM with PostgreSQL.
+## Descripción General
+Esta API proporciona operaciones CRUD para Usuarios y Tarjetas de Crédito utilizando Prisma ORM con PostgreSQL.
 
-## Base URL
+## URL Base
 ```
 http://localhost:3000/api
 ```
 
 ---
 
-## Users API
+## API de Usuarios
 
-### Get All Users
+### Obtener Todos los Usuarios
 **GET** `/api/users`
 
-Query Parameters:
-- `include` (optional): Set to `cards` or `true` to include user's credit cards
+Parámetros de consulta:
+- `include` (opcional): Establecer en `cards` o `true` para incluir las tarjetas de crédito del usuario
 
-**Response:** `200 OK`
+**Respuesta:** `200 OK`
 ```json
 [
   {
     "id": "clxxx...",
-    "email": "user@example.com",
-    "name": "John Doe",
+    "email": "usuario@ejemplo.com",
+    "name": "Juan Pérez",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z",
     "creditCards": []
@@ -32,115 +32,115 @@ Query Parameters:
 ]
 ```
 
-### Create User
+### Crear Usuario
 **POST** `/api/users`
 
-**Request Body:**
+**Cuerpo de la solicitud:**
 ```json
 {
-  "email": "user@example.com",
-  "name": "John Doe"  // optional
+  "email": "usuario@ejemplo.com",
+  "name": "Juan Pérez"  // opcional
 }
 ```
 
-**Response:** `201 Created`
+**Respuesta:** `201 Created`
 ```json
 {
   "id": "clxxx...",
-  "email": "user@example.com",
-  "name": "John Doe",
+  "email": "usuario@ejemplo.com",
+  "name": "Juan Pérez",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z",
   "creditCards": []
 }
 ```
 
-**Errors:**
-- `400`: Email is required
-- `409`: User with this email already exists
+**Errores:**
+- `400`: El email es requerido
+- `409`: Ya existe un usuario con este email
 
-### Get User by ID
+### Obtener Usuario por ID
 **GET** `/api/users/[id]`
 
-Query Parameters:
-- `include` (optional): Set to `cards` or `true` to include user's credit cards
+Parámetros de consulta:
+- `include` (opcional): Establecer en `cards` o `true` para incluir las tarjetas de crédito del usuario
 
-**Response:** `200 OK`
+**Respuesta:** `200 OK`
 ```json
 {
   "id": "clxxx...",
-  "email": "user@example.com",
-  "name": "John Doe",
+  "email": "usuario@ejemplo.com",
+  "name": "Juan Pérez",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z",
   "creditCards": []
 }
 ```
 
-**Errors:**
-- `404`: User not found
+**Errores:**
+- `404`: Usuario no encontrado
 
-### Update User
+### Actualizar Usuario
 **PUT** `/api/users/[id]`
 
-**Request Body:**
+**Cuerpo de la solicitud:**
 ```json
 {
-  "email": "newemail@example.com",  // optional
-  "name": "Jane Doe"                // optional
+  "email": "nuevoemail@ejemplo.com",  // opcional
+  "name": "María García"              // opcional
 }
 ```
 
-**Response:** `200 OK`
+**Respuesta:** `200 OK`
 ```json
 {
   "id": "clxxx...",
-  "email": "newemail@example.com",
-  "name": "Jane Doe",
+  "email": "nuevoemail@ejemplo.com",
+  "name": "María García",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z",
   "creditCards": []
 }
 ```
 
-**Errors:**
-- `404`: User not found
-- `409`: Email already in use
+**Errores:**
+- `404`: Usuario no encontrado
+- `409`: El email ya está en uso
 
-### Delete User
+### Eliminar Usuario
 **DELETE** `/api/users/[id]`
 
-**Response:** `200 OK`
+**Respuesta:** `200 OK`
 ```json
 {
-  "message": "User deleted successfully",
+  "message": "Usuario eliminado exitosamente",
   "id": "clxxx..."
 }
 ```
 
-**Errors:**
-- `404`: User not found
+**Errores:**
+- `404`: Usuario no encontrado
 
-**Note:** Deleting a user will cascade delete all associated credit cards.
+**Nota:** Eliminar un usuario eliminará en cascada todas las tarjetas de crédito asociadas.
 
 ---
 
-## Credit Cards API
+## API de Tarjetas de Crédito
 
-### Get All Credit Cards
+### Obtener Todas las Tarjetas de Crédito
 **GET** `/api/cards`
 
-Query Parameters:
-- `userId` (optional): Filter cards by user ID
-- `include` (optional): Set to `user` or `true` to include user information
+Parámetros de consulta:
+- `userId` (opcional): Filtrar tarjetas por ID de usuario
+- `include` (opcional): Establecer en `user` o `true` para incluir información del usuario
 
-**Response:** `200 OK`
+**Respuesta:** `200 OK`
 ```json
 [
   {
     "id": "clxxx...",
     "cardNumber": "4111111111111111",
-    "cardHolder": "JOHN DOE",
+    "cardHolder": "JUAN PÉREZ",
     "expiryDate": "12/25",
     "cvv": "123",
     "createdAt": "2024-01-01T00:00:00.000Z",
@@ -151,26 +151,26 @@ Query Parameters:
 ]
 ```
 
-### Create Credit Card
+### Crear Tarjeta de Crédito
 **POST** `/api/cards`
 
-**Request Body:**
+**Cuerpo de la solicitud:**
 ```json
 {
   "cardNumber": "4111111111111111",
-  "cardHolder": "JOHN DOE",
-  "expiryDate": "12/25",  // Format: MM/YY
+  "cardHolder": "JUAN PÉREZ",
+  "expiryDate": "12/25",  // Formato: MM/YY
   "cvv": "123",
-  "userId": "clxxx..."    // optional
+  "userId": "clxxx..."    // opcional
 }
 ```
 
-**Response:** `201 Created`
+**Respuesta:** `201 Created`
 ```json
 {
   "id": "clxxx...",
   "cardNumber": "4111111111111111",
-  "cardHolder": "JOHN DOE",
+  "cardHolder": "JUAN PÉREZ",
   "expiryDate": "12/25",
   "cvv": "123",
   "createdAt": "2024-01-01T00:00:00.000Z",
@@ -178,28 +178,28 @@ Query Parameters:
   "userId": "clxxx...",
   "user": {
     "id": "clxxx...",
-    "email": "user@example.com",
-    "name": "John Doe"
+    "email": "usuario@ejemplo.com",
+    "name": "Juan Pérez"
   }
 }
 ```
 
-**Errors:**
-- `400`: Missing required fields or invalid expiry date format
-- `404`: User not found (if userId provided)
+**Errores:**
+- `400`: Faltan campos requeridos o formato de fecha de expiración inválido
+- `404`: Usuario no encontrado (si se proporciona userId)
 
-### Get Credit Card by ID
+### Obtener Tarjeta de Crédito por ID
 **GET** `/api/cards/[id]`
 
-Query Parameters:
-- `include` (optional): Set to `user` or `true` to include user information
+Parámetros de consulta:
+- `include` (opcional): Establecer en `user` o `true` para incluir información del usuario
 
-**Response:** `200 OK`
+**Respuesta:** `200 OK`
 ```json
 {
   "id": "clxxx...",
   "cardNumber": "4111111111111111",
-  "cardHolder": "JOHN DOE",
+  "cardHolder": "JUAN PÉREZ",
   "expiryDate": "12/25",
   "cvv": "123",
   "createdAt": "2024-01-01T00:00:00.000Z",
@@ -209,29 +209,29 @@ Query Parameters:
 }
 ```
 
-**Errors:**
-- `404`: Credit card not found
+**Errores:**
+- `404`: Tarjeta de crédito no encontrada
 
-### Update Credit Card
+### Actualizar Tarjeta de Crédito
 **PUT** `/api/cards/[id]`
 
-**Request Body:**
+**Cuerpo de la solicitud:**
 ```json
 {
-  "cardNumber": "4111111111111111",  // optional
-  "cardHolder": "JANE DOE",          // optional
-  "expiryDate": "12/26",             // optional, Format: MM/YY
-  "cvv": "456",                      // optional
-  "userId": "clxxx..."               // optional, set to null to unassign
+  "cardNumber": "4111111111111111",  // opcional
+  "cardHolder": "MARÍA GARCÍA",      // opcional
+  "expiryDate": "12/26",             // opcional, Formato: MM/YY
+  "cvv": "456",                      // opcional
+  "userId": "clxxx..."               // opcional, establecer en null para desasignar
 }
 ```
 
-**Response:** `200 OK`
+**Respuesta:** `200 OK`
 ```json
 {
   "id": "clxxx...",
   "cardNumber": "4111111111111111",
-  "cardHolder": "JANE DOE",
+  "cardHolder": "MARÍA GARCÍA",
   "expiryDate": "12/26",
   "cvv": "456",
   "createdAt": "2024-01-01T00:00:00.000Z",
@@ -239,111 +239,111 @@ Query Parameters:
   "userId": "clxxx...",
   "user": {
     "id": "clxxx...",
-    "email": "user@example.com",
-    "name": "John Doe"
+    "email": "usuario@ejemplo.com",
+    "name": "Juan Pérez"
   }
 }
 ```
 
-**Errors:**
-- `404`: Credit card not found or User not found (if userId provided)
-- `400`: Invalid expiry date format
+**Errores:**
+- `404`: Tarjeta de crédito no encontrada o Usuario no encontrado (si se proporciona userId)
+- `400`: Formato de fecha de expiración inválido
 
-### Delete Credit Card
+### Eliminar Tarjeta de Crédito
 **DELETE** `/api/cards/[id]`
 
-**Response:** `200 OK`
+**Respuesta:** `200 OK`
 ```json
 {
-  "message": "Credit card deleted successfully",
+  "message": "Tarjeta de crédito eliminada exitosamente",
   "id": "clxxx..."
 }
 ```
 
-**Errors:**
-- `404`: Credit card not found
+**Errores:**
+- `404`: Tarjeta de crédito no encontrada
 
 ---
 
-## Error Responses
+## Respuestas de Error
 
-All endpoints may return the following error responses:
+Todos los endpoints pueden devolver las siguientes respuestas de error:
 
 ### 400 Bad Request
 ```json
 {
-  "error": "Error message describing what went wrong"
+  "error": "Mensaje de error describiendo qué salió mal"
 }
 ```
 
 ### 404 Not Found
 ```json
 {
-  "error": "Resource not found"
+  "error": "Recurso no encontrado"
 }
 ```
 
 ### 405 Method Not Allowed
 ```json
 {
-  "error": "Method GET Not Allowed"
+  "error": "Método GET no permitido"
 }
 ```
 
 ### 409 Conflict
 ```json
 {
-  "error": "Resource conflict message"
+  "error": "Mensaje de conflicto de recurso"
 }
 ```
 
 ### 500 Internal Server Error
 ```json
 {
-  "error": "Internal Server Error",
-  "message": "Detailed error message"
+  "error": "Error Interno del Servidor",
+  "message": "Mensaje de error detallado"
 }
 ```
 
 ---
 
-## Setup Instructions
+## Instrucciones de Configuración
 
-1. **Install dependencies:**
+1. **Instalar dependencias:**
    ```bash
    pnpm install
    ```
 
-2. **Set up environment variables:**
-   Create a `.env` file with:
-   ```
-   DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+2. **Configurar variables de entorno:**
+   Crear un archivo `.env` con:
+   ```env
+   DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/nombre_bd"
    ```
 
-3. **Generate Prisma Client:**
+3. **Generar el cliente de Prisma:**
    ```bash
    pnpm prisma:generate
    ```
 
-4. **Run migrations:**
+4. **Ejecutar migraciones:**
    ```bash
    pnpm prisma:migrate
    ```
 
-5. **Start development server:**
+5. **Iniciar el servidor de desarrollo:**
    ```bash
    pnpm dev
    ```
 
 ---
 
-## Security Notes
+## Notas de Seguridad
 
-⚠️ **Important:** The current implementation stores credit card data in plain text. For production use:
+⚠️ **Importante:** La implementación actual almacena los datos de tarjetas de crédito en texto plano. Para uso en producción:
 
-1. Encrypt sensitive fields (`cardNumber`, `cvv`) before storing
-2. Implement authentication and authorization
-3. Use HTTPS for all API requests
-4. Add rate limiting
-5. Implement input validation and sanitization
-6. Consider PCI DSS compliance requirements
+1. Encriptar campos sensibles (`cardNumber`, `cvv`) antes de almacenar
+2. Implementar autenticación y autorización
+3. Usar HTTPS para todas las peticiones de la API
+4. Agregar limitación de tasa (rate limiting)
+5. Implementar validación y sanitización de entradas
+6. Considerar requisitos de cumplimiento con PCI DSS
