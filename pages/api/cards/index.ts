@@ -64,6 +64,14 @@ async function createCard(req: NextApiRequest, res: NextApiResponse) {
     });
   }
 
+  // Validar que el año no sea menor a 2025
+  const [, year] = expiryDate.split('/').map(Number);
+  if (year < 25) {
+    return res.status(400).json({ 
+      error: 'Expiry year cannot be below 2025' 
+    });
+  }
+
   // Si se proporciona userId, verificar que el usuario existe
   if (userId) {
     const user = await prisma.user.findUnique({

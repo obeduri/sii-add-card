@@ -74,6 +74,14 @@ async function updateCard(id: string, req: NextApiRequest, res: NextApiResponse)
         error: 'Invalid expiry date format. Expected MM/YY' 
       });
     }
+
+    // Validar que el año no sea menor a 2025
+    const [, year] = expiryDate.split('/').map(Number);
+    if (year < 25) {
+      return res.status(400).json({ 
+        error: 'Expiry year cannot be below 2025' 
+      });
+    }
   }
 
   // Si se está actualizando userId, verificar que el usuario existe

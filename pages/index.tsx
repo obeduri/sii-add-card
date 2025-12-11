@@ -1,16 +1,16 @@
 import 'react-credit-cards-2/dist/es/styles-compiled.css'
 
-import { Box, Button, HStack, Heading, Input, Text, VStack, Spinner } from "@chakra-ui/react"
+import { Box, Button, HStack, Heading, Input, Spinner, Text, VStack } from "@chakra-ui/react"
 import Cards, { Focused } from 'react-credit-cards-2'
 import { DrawerBackdrop, DrawerBody, DrawerCloseTrigger, DrawerContent, DrawerFooter, DrawerHeader, DrawerRoot, DrawerTitle, DrawerTrigger } from "@chakra-ui/react"
 import { FaPlus, FaRegTrashAlt } from "react-icons/fa";
-import { useEffect, useState, useCallback, useMemo } from "react"
-import axios from 'axios'
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import CreditCard from "@/components/CreditCard";
 import { LiaEditSolid } from "react-icons/lia";
 import Swal from 'sweetalert2'
 import { Tooltip } from "@/components/Tooltip";
+import axios from 'axios'
 
 interface CreditCard {
   id: string;
@@ -98,7 +98,8 @@ const Home = () => {
     const maxYear = currentYear + 5;
 
     if (month < 1 || month > 12) return "El mes debe estar entre 01 y 12";
-    if (year < 22 || year > maxYear) return `El año debe estar entre 22 y ${maxYear}`;
+    if (year < 25) return "El año no puede ser menor a 2025";
+    if (year > maxYear) return `El año no puede ser mayor a ${maxYear}`;
 
     // Verificar si la tarjeta está vencida
     const currentMonth = new Date().getMonth() + 1;
@@ -271,11 +272,11 @@ const Home = () => {
   const maskCardNumber = (cardNumber: string): string => {
     const cleaned = cardNumber.replace(/\s/g, '');
     if (cleaned.length !== 16) return cardNumber;
-    
+
     const firstTwo = cleaned.substring(0, 2);
     const lastFour = cleaned.substring(12, 16);
     const masked = firstTwo + '**********' + lastFour;
-    
+
     return masked;
   };
 
@@ -323,8 +324,14 @@ const Home = () => {
         <DrawerRoot open={isModalOpen} onOpenChange={(e) => setIsModalOpen(e.open)} placement="bottom">
           <DrawerTrigger asChild>
             <Button
-              colorScheme="blue"
               size="lg"
+              w="72px"
+              h="72px"
+              borderRadius="full"
+              position="fixed"
+              bottom="24px"
+              right="24px"
+              zIndex={1000}
               onClick={() => {
                 setEditingId(null);
                 setCardNumber("");
@@ -334,8 +341,9 @@ const Home = () => {
                 setErrors({ cardNumber: "", cardHolder: "", expiryDate: "", cvv: "" });
               }}
             >
-              <FaPlus />
-              <Text ml={2}>Agregar Tarjeta</Text>
+              <Tooltip content="Agregar Tarjeta">
+                <FaPlus />
+              </Tooltip>
             </Button>
           </DrawerTrigger>
           <DrawerBackdrop />
