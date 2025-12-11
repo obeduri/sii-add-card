@@ -1,10 +1,11 @@
 import 'react-credit-cards-2/dist/es/styles-compiled.css'
 
-import { Box, Button, HStack, Heading, Input, Text, VStack } from "@chakra-ui/react"
+import { Box, Button, HStack, Heading, Input, Text, VStack, Spinner } from "@chakra-ui/react"
 import Cards, { Focused } from 'react-credit-cards-2'
 import { DrawerBackdrop, DrawerBody, DrawerCloseTrigger, DrawerContent, DrawerFooter, DrawerHeader, DrawerRoot, DrawerTitle, DrawerTrigger } from "@chakra-ui/react"
 import { FaPlus, FaRegTrashAlt } from "react-icons/fa";
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
+import axios from 'axios'
 
 import CreditCard from "@/components/CreditCard";
 import { LiaEditSolid } from "react-icons/lia";
@@ -28,7 +29,8 @@ const Home = () => {
   const [focus, setFocus] = useState<Focused | undefined>(undefined);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isInitialMount = useRef(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Errores de validación
   const [errors, setErrors] = useState({
@@ -38,7 +40,7 @@ const Home = () => {
     cvv: ""
   });
 
-  const Toast = Swal.mixin({
+  const Toast = useMemo(() => Swal.mixin({
     toast: true,
     position: "top-end",
     showConfirmButton: false,
@@ -48,22 +50,28 @@ const Home = () => {
       toast.onmouseenter = Swal.stopTimer;
       toast.onmouseleave = Swal.resumeTimer;
     }
-  });
+  }), []);
 
-  // Cargar tarjetas desde localStorage al montar (solo del lado del cliente)
-  useEffect(() => {
-    if (isInitialMount.current) {
-      const storedCards = localStorage.getItem("creditCards");
-      if (storedCards) {
-        // eslint-disable-next-line
-        setCards(JSON.parse(storedCards));
-      }
-      isInitialMount.current = false;
-    } else {
-      // Guardar tarjetas en localStorage cada vez que cambien (después de la carga inicial)
-      localStorage.setItem("creditCards", JSON.stringify(cards));
+  const fetchCards = useCallback(async () => {
+    try {
+      setInitialLoading(true);
+      const response = await axios.get('/api/cards');
+      setCards(response.data);
+    } catch (error) {
+      console.error('Error fetching cards:', error);
+      Toast.fire({
+        icon: "error",
+        title: "Error al cargar las tarjetas"
+      });
+    } finally {
+      setInitialLoading(false);
     }
-  }, [cards]);
+  }, [Toast]);
+
+  // Cargar tarjetas desde la API al montar
+  useEffect(() => {
+    fetchCards();
+  }, [fetchCards]);
 
   // Funciones de validación
   const validateCardNumber = (value: string): string => {
@@ -120,7 +128,7 @@ const Home = () => {
     return !Object.values(newErrors).some(error => error !== "");
   };
 
-  const addCard = () => {
+  const addCard = async () => {
     if (!validateAllFields()) {
       Swal.fire({
         icon: 'error',
@@ -131,55 +139,73 @@ const Home = () => {
       return;
     }
 
-    if (editingId) {
-      // Actualizar tarjeta existente
-      setCards(cards.map(card =>
-        card.id === editingId
-          ? { ...card, cardNumber, cardHolder, expiryDate, cvv }
-          : card
-      ));
+    setLoading(true);
 
+    try {
+      if (editingId) {
+        // Actualizar tarjeta existente
+        const response = await axios.put(`/api/cards/${editingId}`, {
+          cardNumber: cardNumber.replace(/\s/g, ''),
+          cardHolder,
+          expiryDate,
+          cvv,
+        });
+
+        setCards(cards.map(card =>
+          card.id === editingId ? response.data : card
+        ));
+
+        Swal.fire({
+          icon: 'success',
+          title: '¡Tarjeta actualizada!',
+          text: 'Los cambios se han guardado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+
+        setEditingId(null);
+      } else {
+        // Agregar nueva tarjeta
+        const response = await axios.post('/api/cards', {
+          cardNumber: cardNumber.replace(/\s/g, ''),
+          cardHolder,
+          expiryDate,
+          cvv,
+        });
+
+        setCards([...cards, response.data]);
+
+        Swal.fire({
+          icon: 'success',
+          title: '¡Tarjeta agregada!',
+          text: 'La tarjeta se ha guardado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+
+      // Limpiar formulario
+      setCardNumber("");
+      setCardHolder("");
+      setExpiryDate("");
+      setCvv("");
+      setErrors({ cardNumber: "", cardHolder: "", expiryDate: "", cvv: "" });
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error saving card:', error);
       Swal.fire({
-        icon: 'success',
-        title: '¡Tarjeta actualizada!',
-        text: 'Los cambios se han guardado correctamente',
-        timer: 2000,
-        showConfirmButton: false
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar la tarjeta. Por favor intenta de nuevo.',
+        confirmButtonText: 'Entendido'
       });
-
-      setEditingId(null);
-    } else {
-      // Agregar nueva tarjeta
-      const newCard: CreditCard = {
-        id: Date.now().toString(),
-        cardNumber,
-        cardHolder,
-        expiryDate,
-        cvv,
-      };
-
-      setCards([...cards, newCard]);
-
-      Swal.fire({
-        icon: 'success',
-        title: '¡Tarjeta agregada!',
-        text: 'La tarjeta se ha guardado correctamente',
-        timer: 2000,
-        showConfirmButton: false
-      });
+    } finally {
+      setLoading(false);
     }
-
-    // Limpiar formulario
-    setCardNumber("");
-    setCardHolder("");
-    setExpiryDate("");
-    setCvv("");
-    setErrors({ cardNumber: "", cardHolder: "", expiryDate: "", cvv: "" });
-    setIsModalOpen(false);
   };
 
-  const deleteCard = (id: string) => {
-    Swal.fire({
+  const deleteCard = async (id: string) => {
+    const result = await Swal.fire({
       icon: 'warning',
       title: '¿Eliminar tarjeta?',
       text: 'Esta acción no se puede deshacer',
@@ -188,19 +214,29 @@ const Home = () => {
       cancelButtonText: 'Cancelar',
       confirmButtonColor: '#FA6868',
       cancelButtonColor: '#cecece'
-    }).then((result) => {
-      if (result.isConfirmed) {
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`/api/cards/${id}`);
         setCards(cards.filter(card => card.id !== id));
         Toast.fire({
           icon: "success",
           title: "Tarjeta eliminada"
         });
+      } catch (error) {
+        console.error('Error deleting card:', error);
+        Toast.fire({
+          icon: "error",
+          title: "Error al eliminar la tarjeta"
+        });
       }
-    });
+    }
   };
 
   const editCard = (card: CreditCard) => {
-    setCardNumber(card.cardNumber);
+    // Format card number with spaces for display
+    setCardNumber(formatCardNumber(card.cardNumber));
     setCardHolder(card.cardHolder);
     setExpiryDate(card.expiryDate);
     setCvv(card.cvv);
@@ -395,11 +431,11 @@ const Home = () => {
             </DrawerBody>
             <DrawerFooter>
               <HStack width="100%" gap={2}>
-                <Button bg="gray" onClick={cancelEdit} width="50%">
+                <Button bg="gray" onClick={cancelEdit} width="50%" disabled={loading}>
                   Cancelar
                 </Button>
-                <Button bg="#5A9CB5" onClick={addCard} width="50%">
-                  {editingId ? 'Guardar Cambios' : 'Agregar Tarjeta'}
+                <Button bg="#5A9CB5" onClick={addCard} width="50%" disabled={loading}>
+                  {loading ? <Spinner size="sm" /> : (editingId ? 'Guardar Cambios' : 'Agregar Tarjeta')}
                 </Button>
               </HStack>
             </DrawerFooter>
@@ -411,7 +447,11 @@ const Home = () => {
         {/* Lista de Tarjetas */}
         <Box>
           <Heading size="md" mb={4}>Tus Tarjetas ({cards.length})</Heading>
-          {cards.length === 0 ? (
+          {initialLoading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" py={8}>
+              <Spinner size="xl" />
+            </Box>
+          ) : cards.length === 0 ? (
             <Text color="gray.500">No hay tarjetas agregadas aún</Text>
           ) : (
             <Box
