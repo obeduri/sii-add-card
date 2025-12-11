@@ -1,5 +1,5 @@
 // pages/api/cards/[id].ts
-// GET, PUT, DELETE credit card by ID
+// GET, PUT, DELETE tarjeta de crédito por ID
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prisma';
@@ -35,7 +35,7 @@ export default async function handler(
   }
 }
 
-// GET /api/cards/[id] - Get credit card by ID
+// GET /api/cards/[id] - Obtener tarjeta de crédito por ID
 async function getCard(id: string, req: NextApiRequest, res: NextApiResponse) {
   const { include } = req.query;
 
@@ -53,11 +53,11 @@ async function getCard(id: string, req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json(card);
 }
 
-// PUT /api/cards/[id] - Update credit card
+// PUT /api/cards/[id] - Actualizar tarjeta de crédito
 async function updateCard(id: string, req: NextApiRequest, res: NextApiResponse) {
   const { cardNumber, cardHolder, expiryDate, cvv, userId } = req.body;
 
-  // Check if card exists
+  // Verificar si la tarjeta existe
   const existingCard = await prisma.creditCard.findUnique({
     where: { id },
   });
@@ -66,7 +66,7 @@ async function updateCard(id: string, req: NextApiRequest, res: NextApiResponse)
     return res.status(404).json({ error: 'Credit card not found' });
   }
 
-  // Validate expiry date format if provided
+  // Validar formato de fecha de vencimiento si se proporciona
   if (expiryDate) {
     const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
     if (!expiryRegex.test(expiryDate)) {
@@ -76,7 +76,7 @@ async function updateCard(id: string, req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  // If userId is being updated, verify user exists
+  // Si se está actualizando userId, verificar que el usuario existe
   if (userId !== undefined && userId !== null) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -104,9 +104,9 @@ async function updateCard(id: string, req: NextApiRequest, res: NextApiResponse)
   return res.status(200).json(card);
 }
 
-// DELETE /api/cards/[id] - Delete credit card
+// DELETE /api/cards/[id] - Eliminar tarjeta de crédito
 async function deleteCard(id: string, res: NextApiResponse) {
-  // Check if card exists
+  // Verificar si la tarjeta existe
   const card = await prisma.creditCard.findUnique({
     where: { id },
   });

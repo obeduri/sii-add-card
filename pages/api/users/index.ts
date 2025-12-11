@@ -1,5 +1,5 @@
 // pages/api/users/index.ts
-// GET all users, POST create user
+// GET todos los usuarios, POST crear usuario
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prisma';
@@ -27,7 +27,7 @@ export default async function handler(
   }
 }
 
-// GET /api/users - Get all users with their credit cards
+// GET /api/users - Obtener todos los usuarios con sus tarjetas de crédito
 async function getUsers(req: NextApiRequest, res: NextApiResponse) {
   const { include } = req.query;
   
@@ -43,7 +43,7 @@ async function getUsers(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json(users);
 }
 
-// POST /api/users - Create a new user
+// POST /api/users - Crear un nuevo usuario
 async function createUser(req: NextApiRequest, res: NextApiResponse) {
   const { email, name } = req.body;
 
@@ -51,7 +51,7 @@ async function createUser(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ error: 'Email is required' });
   }
 
-  // Check if user already exists
+  // Verificar si el usuario ya existe
   const existingUser = await prisma.user.findUnique({
     where: { email },
   });

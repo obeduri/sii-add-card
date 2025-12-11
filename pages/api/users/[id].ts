@@ -1,5 +1,5 @@
 // pages/api/users/[id].ts
-// GET, PUT, DELETE user by ID
+// GET, PUT, DELETE usuario por ID
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prisma';
@@ -35,7 +35,7 @@ export default async function handler(
   }
 }
 
-// GET /api/users/[id] - Get user by ID
+// GET /api/users/[id] - Obtener usuario por ID
 async function getUser(id: string, req: NextApiRequest, res: NextApiResponse) {
   const { include } = req.query;
 
@@ -53,11 +53,11 @@ async function getUser(id: string, req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json(user);
 }
 
-// PUT /api/users/[id] - Update user
+// PUT /api/users/[id] - Actualizar usuario
 async function updateUser(id: string, req: NextApiRequest, res: NextApiResponse) {
   const { email, name } = req.body;
 
-  // Check if user exists
+  // Verificar si el usuario existe
   const existingUser = await prisma.user.findUnique({
     where: { id },
   });
@@ -66,7 +66,7 @@ async function updateUser(id: string, req: NextApiRequest, res: NextApiResponse)
     return res.status(404).json({ error: 'User not found' });
   }
 
-  // If email is being updated, check for conflicts
+  // Si se está actualizando el email, verificar conflictos
   if (email && email !== existingUser.email) {
     const emailConflict = await prisma.user.findUnique({
       where: { email },
@@ -91,9 +91,9 @@ async function updateUser(id: string, req: NextApiRequest, res: NextApiResponse)
   return res.status(200).json(user);
 }
 
-// DELETE /api/users/[id] - Delete user (cascades to credit cards)
+// DELETE /api/users/[id] - Eliminar usuario (en cascada a tarjetas de crédito)
 async function deleteUser(id: string, res: NextApiResponse) {
-  // Check if user exists
+  // Verificar si el usuario existe
   const user = await prisma.user.findUnique({
     where: { id },
   });

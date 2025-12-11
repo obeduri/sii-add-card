@@ -1,5 +1,5 @@
 // pages/api/cards/index.ts
-// GET all credit cards, POST create credit card
+// GET todas las tarjetas de crédito, POST crear tarjeta de crédito
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prisma';
@@ -27,7 +27,7 @@ export default async function handler(
   }
 }
 
-// GET /api/cards - Get all credit cards
+// GET /api/cards - Obtener todas las tarjetas de crédito
 async function getCards(req: NextApiRequest, res: NextApiResponse) {
   const { userId, include } = req.query;
   
@@ -44,11 +44,11 @@ async function getCards(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json(cards);
 }
 
-// POST /api/cards - Create a new credit card
+// POST /api/cards - Crear una nueva tarjeta de crédito
 async function createCard(req: NextApiRequest, res: NextApiResponse) {
   const { cardNumber, cardHolder, expiryDate, cvv, userId } = req.body;
 
-  // Validate required fields
+  // Validar campos requeridos
   if (!cardNumber || !cardHolder || !expiryDate || !cvv) {
     return res.status(400).json({ 
       error: 'Missing required fields',
@@ -56,7 +56,7 @@ async function createCard(req: NextApiRequest, res: NextApiResponse) {
     });
   }
 
-  // Validate expiry date format (MM/YY)
+  // Validar formato de fecha de vencimiento (MM/YY)
   const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
   if (!expiryRegex.test(expiryDate)) {
     return res.status(400).json({ 
@@ -64,7 +64,7 @@ async function createCard(req: NextApiRequest, res: NextApiResponse) {
     });
   }
 
-  // If userId is provided, verify user exists
+  // Si se proporciona userId, verificar que el usuario existe
   if (userId) {
     const user = await prisma.user.findUnique({
       where: { id: userId },

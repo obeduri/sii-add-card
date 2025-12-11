@@ -1,5 +1,5 @@
 // lib/prisma.ts
-// Prisma Client singleton to prevent multiple instances in development
+// Singleton de Prisma Client para prevenir múltiples instancias en desarrollo
 
 import { PrismaClient } from '../generated/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -10,11 +10,11 @@ const globalForPrisma = global as unknown as {
   pool: Pool;
 };
 
-// Create connection pool
+// Crear pool de conexiones
 const pool = globalForPrisma.pool || new Pool({ connectionString: process.env.DATABASE_URL });
 if (process.env.NODE_ENV !== 'production') globalForPrisma.pool = pool;
 
-// Create Prisma adapter
+// Crear adaptador de Prisma
 const adapter = new PrismaPg(pool);
 
 export const prisma =

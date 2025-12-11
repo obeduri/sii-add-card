@@ -235,7 +235,7 @@ const Home = () => {
   };
 
   const editCard = (card: CreditCard) => {
-    // Format card number with spaces for display
+    // Formatear número de tarjeta con espacios para mostrar
     setCardNumber(formatCardNumber(card.cardNumber));
     setCardHolder(card.cardHolder);
     setExpiryDate(card.expiryDate);
