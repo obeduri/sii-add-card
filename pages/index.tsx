@@ -30,7 +30,27 @@ const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isInitialMount = useRef(true);
 
-  // Load cards from localStorage on mount (client-side only)
+  // Errores de validación
+  const [errors, setErrors] = useState({
+    cardNumber: "",
+    cardHolder: "",
+    expiryDate: "",
+    cvv: ""
+  });
+
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
+
+  // Cargar tarjetas desde localStorage al montar (solo del lado del cliente)
   useEffect(() => {
     if (isInitialMount.current) {
       const storedCards = localStorage.getItem("creditCards");
@@ -40,24 +60,79 @@ const Home = () => {
       }
       isInitialMount.current = false;
     } else {
-      // Save cards to localStorage whenever they change (after initial load)
+      // Guardar tarjetas en localStorage cada vez que cambien (después de la carga inicial)
       localStorage.setItem("creditCards", JSON.stringify(cards));
     }
   }, [cards]);
 
+  // Funciones de validación
+  const validateCardNumber = (value: string): string => {
+    const cleaned = value.replace(/\s/g, '');
+    if (!cleaned) return "El número de tarjeta es requerido";
+    if (!/^\d+$/.test(cleaned)) return "El número de tarjeta solo puede contener números";
+    if (cleaned.length !== 16) return "El número de tarjeta debe tener 16 dígitos";
+    return "";
+  };
+
+  const validateCardHolder = (value: string): string => {
+    if (!value.trim()) return "El nombre del titular es requerido";
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(value)) return "El nombre solo puede contener letras y letras con tildes";
+    if (value.length > 20) return "El nombre no puede exceder 20 caracteres";
+    return "";
+  };
+
+  const validateExpiryDate = (value: string): string => {
+    if (!value) return "La fecha de vencimiento es requerida";
+    if (!/^\d{2}\/\d{2}$/.test(value)) return "El formato debe ser MM/YY";
+
+    const [month, year] = value.split('/').map(Number);
+    const currentYear = new Date().getFullYear() % 100;
+    const maxYear = currentYear + 5;
+
+    if (month < 1 || month > 12) return "El mes debe estar entre 01 y 12";
+    if (year < 22 || year > maxYear) return `El año debe estar entre 22 y ${maxYear}`;
+
+    // Verificar si la tarjeta está vencida
+    const currentMonth = new Date().getMonth() + 1;
+    if (year === currentYear && month < currentMonth) {
+      return "La tarjeta está vencida";
+    }
+
+    return "";
+  };
+
+  const validateCvv = (value: string): string => {
+    if (!value) return "El CVV es requerido";
+    if (!/^\d{3,4}$/.test(value)) return "El CVV debe tener 3 o 4 dígitos";
+    return "";
+  };
+
+  const validateAllFields = (): boolean => {
+    const newErrors = {
+      cardNumber: validateCardNumber(cardNumber),
+      cardHolder: validateCardHolder(cardHolder),
+      expiryDate: validateExpiryDate(expiryDate),
+      cvv: validateCvv(cvv)
+    };
+
+    setErrors(newErrors);
+
+    return !Object.values(newErrors).some(error => error !== "");
+  };
+
   const addCard = () => {
-    if (!cardNumber || !cardHolder || !expiryDate || !cvv) {
+    if (!validateAllFields()) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Campos incompletos',
-        text: 'Por favor completa todos los campos',
+        icon: 'error',
+        title: 'Campos inválidos',
+        text: 'Por favor corrige los errores en el formulario',
         confirmButtonText: 'Entendido'
       });
       return;
     }
 
     if (editingId) {
-      // Update existing card
+      // Actualizar tarjeta existente
       setCards(cards.map(card =>
         card.id === editingId
           ? { ...card, cardNumber, cardHolder, expiryDate, cvv }
@@ -74,7 +149,7 @@ const Home = () => {
 
       setEditingId(null);
     } else {
-      // Add new card
+      // Agregar nueva tarjeta
       const newCard: CreditCard = {
         id: Date.now().toString(),
         cardNumber,
@@ -94,11 +169,12 @@ const Home = () => {
       });
     }
 
-    // Clear form
+    // Limpiar formulario
     setCardNumber("");
     setCardHolder("");
     setExpiryDate("");
     setCvv("");
+    setErrors({ cardNumber: "", cardHolder: "", expiryDate: "", cvv: "" });
     setIsModalOpen(false);
   };
 
@@ -110,17 +186,14 @@ const Home = () => {
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6'
+      confirmButtonColor: '#FA6868',
+      cancelButtonColor: '#cecece'
     }).then((result) => {
       if (result.isConfirmed) {
         setCards(cards.filter(card => card.id !== id));
-        Swal.fire({
-          icon: 'success',
-          title: 'Eliminada',
-          text: 'La tarjeta ha sido eliminada',
-          timer: 1500,
-          showConfirmButton: false
+        Toast.fire({
+          icon: "success",
+          title: "Tarjeta eliminada"
         });
       }
     });
@@ -140,6 +213,7 @@ const Home = () => {
     setCardHolder("");
     setExpiryDate("");
     setCvv("");
+    setErrors({ cardNumber: "", cardHolder: "", expiryDate: "", cvv: "" });
     setEditingId(null);
     setIsModalOpen(false);
   };
@@ -159,18 +233,38 @@ const Home = () => {
   };
 
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCardNumber(e.target.value);
-    setCardNumber(formatted);
+    const cleaned = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+    if (cleaned.length <= 16) {
+      const formatted = formatCardNumber(e.target.value);
+      setCardNumber(formatted);
+      setErrors(prev => ({ ...prev, cardNumber: validateCardNumber(formatted) }));
+    }
   };
 
   const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatExpiry(e.target.value);
     setExpiryDate(formatted);
+    if (formatted.length === 5) {
+      setErrors(prev => ({ ...prev, expiryDate: validateExpiryDate(formatted) }));
+    } else {
+      setErrors(prev => ({ ...prev, expiryDate: "" }));
+    }
   };
 
   const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const cleaned = e.target.value.replace(/\D/g, '').substring(0, 4);
     setCvv(cleaned);
+    setErrors(prev => ({ ...prev, cvv: validateCvv(cleaned) }));
+  };
+
+  const handleCardHolderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Solo permitir letras, espacios y caracteres con tilde
+    const filtered = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+    if (filtered.length <= 20) {
+      setCardHolder(filtered);
+      setErrors(prev => ({ ...prev, cardHolder: validateCardHolder(filtered) }));
+    }
   };
 
   return (
@@ -188,6 +282,7 @@ const Home = () => {
                 setCardHolder("");
                 setExpiryDate("");
                 setCvv("");
+                setErrors({ cardNumber: "", cardHolder: "", expiryDate: "", cvv: "" });
               }}
             >
               <FaPlus />
@@ -232,7 +327,13 @@ const Home = () => {
                     onChange={handleCardNumberChange}
                     onFocus={() => setFocus('number')}
                     maxLength={19}
+                    borderColor={errors.cardNumber ? "red.500" : undefined}
                   />
+                  {errors.cardNumber && (
+                    <Text color="red.500" fontSize="sm" mt={1}>
+                      {errors.cardNumber}
+                    </Text>
+                  )}
                 </Box>
 
                 <Box width="100%">
@@ -240,9 +341,16 @@ const Home = () => {
                   <Input
                     placeholder="Juan Pérez"
                     value={cardHolder}
-                    onChange={(e) => setCardHolder(e.target.value)}
+                    onChange={handleCardHolderChange}
                     onFocus={() => setFocus('name')}
+                    maxLength={20}
+                    borderColor={errors.cardHolder ? "red.500" : undefined}
                   />
+                  {errors.cardHolder && (
+                    <Text color="red.500" fontSize="sm" mt={1}>
+                      {errors.cardHolder}
+                    </Text>
+                  )}
                 </Box>
 
                 <HStack width="100%">
@@ -254,7 +362,13 @@ const Home = () => {
                       onChange={handleExpiryChange}
                       onFocus={() => setFocus('expiry')}
                       maxLength={5}
+                      borderColor={errors.expiryDate ? "red.500" : undefined}
                     />
+                    {errors.expiryDate && (
+                      <Text color="red.500" fontSize="sm" mt={1}>
+                        {errors.expiryDate}
+                      </Text>
+                    )}
                   </Box>
 
                   <Box width="100%">
@@ -266,17 +380,23 @@ const Home = () => {
                       onFocus={() => setFocus('cvc')}
                       maxLength={4}
                       type="password"
+                      borderColor={errors.cvv ? "red.500" : undefined}
                     />
+                    {errors.cvv && (
+                      <Text color="red.500" fontSize="sm" mt={1}>
+                        {errors.cvv}
+                      </Text>
+                    )}
                   </Box>
                 </HStack>
               </VStack>
             </DrawerBody>
             <DrawerFooter>
               <HStack width="100%" gap={2}>
-                <Button colorScheme="gray" onClick={cancelEdit} width="50%">
+                <Button bg="gray" onClick={cancelEdit} width="50%">
                   Cancelar
                 </Button>
-                <Button colorScheme="blue" onClick={addCard} width="50%">
+                <Button bg="#5A9CB5" onClick={addCard} width="50%">
                   {editingId ? 'Guardar Cambios' : 'Agregar Tarjeta'}
                 </Button>
               </HStack>
@@ -298,8 +418,8 @@ const Home = () => {
               gap={6}
             >
               {cards.map((card) => (
-                <Box 
-                  key={card.id} 
+                <Box
+                  key={card.id}
                   position="relative"
                   css={{
                     '& .card-actions': {
