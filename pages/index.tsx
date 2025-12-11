@@ -268,6 +268,17 @@ const Home = () => {
     return cleaned;
   };
 
+  const maskCardNumber = (cardNumber: string): string => {
+    const cleaned = cardNumber.replace(/\s/g, '');
+    if (cleaned.length !== 16) return cardNumber;
+    
+    const firstTwo = cleaned.substring(0, 2);
+    const lastFour = cleaned.substring(12, 16);
+    const masked = firstTwo + '**********' + lastFour;
+    
+    return masked;
+  };
+
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const cleaned = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
     if (cleaned.length <= 16) {
@@ -474,7 +485,7 @@ const Home = () => {
                   }}
                 >
                   <Cards
-                    number={card.cardNumber}
+                    number={maskCardNumber(card.cardNumber)}
                     expiry={card.expiryDate}
                     cvc={card.cvv}
                     name={card.cardHolder}
