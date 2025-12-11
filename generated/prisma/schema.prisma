@@ -1,0 +1,36 @@
+// prisma/schema.prisma
+// Define your database models
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Credit Card model
+model CreditCard {
+  id         String   @id @default(cuid())
+  cardNumber String // Encrypted in production
+  cardHolder String
+  expiryDate String // Format: MM/YY
+  cvv        String // Encrypted in production
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// User model (optional - for multi-user support)
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  creditCards CreditCard[]
+}

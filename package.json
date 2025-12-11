@@ -6,12 +6,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.30.0",
     "@emotion/react": "^11.14.0",
+    "@prisma/client": "^7.1.0",
+    "axios": "^1.13.2",
     "next": "16.0.8",
+    "prisma": "^7.1.0",
     "react": "19.2.1",
     "react-credit-cards-2": "^1.0.3",
     "react-dom": "19.2.1",

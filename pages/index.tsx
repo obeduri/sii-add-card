@@ -269,8 +269,10 @@ const Home = () => {
 
   return (
     <Box p={8} maxW="1200px" mx="auto">
-      <HStack justify="space-between" mb={6}>
+      <Box mb={6} textAlign={{ base: "left", md: "center", sm: "center" }}>
         <Heading>Gestor de Tarjetas de Crédito</Heading>
+      </Box>
+      <HStack justify="space-between" mb={6}>
         <DrawerRoot open={isModalOpen} onOpenChange={(e) => setIsModalOpen(e.open)} placement="bottom">
           <DrawerTrigger asChild>
             <Button
